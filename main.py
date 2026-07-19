@@ -1,31 +1,9 @@
-"""
-Inventory Management API — practice skeleton.
-
-Read PROJECT_BRIEF.md first. Fill in the TODOs yourself — don't skip to
-answers. Run with:
-
-    uvicorn main:app --reload
-
-Then test at http://127.0.0.1:8000/docs
-"""
-
 from fastapi import FastAPI, HTTPException, Query, Path
 from pydantic import BaseModel, Field
 from typing import Optional
+from starlette import status
 
 app = FastAPI(title="Inventory Management API")
-
-
-# ---------------------------------------------------------------------------
-# TODO 1: Define your Pydantic model(s)
-# ---------------------------------------------------------------------------
-# You'll likely want two models:
-#   - ItemCreate: what the client sends in POST (no `id` field)
-#   - Item: what you store/return (includes `id`)
-#
-# Remember to use Field() for validation constraints (min_length, gt, ge, etc).
-# For `category`, think about whether a plain str with a manual check is
-# enough for now, or whether you want to look into Literal / Enum.
 
 class ItemCreate(BaseModel):
     # TODO: name, category, price, quantity, description
@@ -37,7 +15,7 @@ class ItemCreate(BaseModel):
     description:str | None = Field(description='Description is optional', max_length=200, default=None)
 
 
-class Item(): # I Deleted the parent class
+class Item():
     def __init__(self, id: int ,name: str, category: str, price: int, quantity: int, description: str):
         self.id: int = id
         self.name: str = name
@@ -47,19 +25,17 @@ class Item(): # I Deleted the parent class
         self.description: str = description
 
 
-# ---------------------------------------------------------------------------
-# In-memory "database"
-# ---------------------------------------------------------------------------
-items: list[Item] = []
-def create_id(item):
-    item.id = 1 if len(items) == 0 else items[-1].id + 1
+items: dict[int, Item] = {}
+_next_id = 1
+
+def _get_or_404(item_id:int) -> Item:
+    item = items.get(item_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail='Id not found')
     return item
 
 
-# ---------------------------------------------------------------------------
-# TODO 2: GET /items — list with optional filters
-# ---------------------------------------------------------------------------
-@app.get("/items")
+@app.get("/items", status_code=status.HTTP_200_OK)
 def get_items(
     category: Optional[str] = None,
     min_price: Optional[float] = None,
@@ -67,9 +43,7 @@ def get_items(
     in_stock_only: Optional[bool] = None,
     search: Optional[str] = None,
 ):
-    # TODO: start with `items`, then narrow the list down based on
-    # whichever query params were actually provided (not None).
-    working_list = items
+    working_list = list(items.values())
     if category is not None:
         working_list = list(filter(lambda item: item.category.casefold() == category.casefold(), working_list))
     if min_price is not None:
@@ -85,57 +59,34 @@ def get_items(
 
 
 
-# ---------------------------------------------------------------------------
-# TODO 3: GET /items/{item_id} — single item
-# ---------------------------------------------------------------------------
-@app.get("/items/{item_id}")
+@app.get("/items/{item_id}", status_code=status.HTTP_200_OK)
 def get_item(item_id: int):
-    # TODO: find the item with this id.
-    # If it doesn't exist: raise HTTPException(status_code=404, detail=...)
-    for item in items:
-        if item.id == item_id:
-            return item
-    raise HTTPException(status_code=404, detail="Id not found")
+    return _get_or_404(item_id)
 
 
-# ---------------------------------------------------------------------------
-# TODO 4: POST /items — create
-# ---------------------------------------------------------------------------
-@app.post("/items", status_code=201)
+@app.post("/items", status_code=status.HTTP_201_CREATED)
 def create_item(item: ItemCreate):
-    # TODO:
-    #   1. build a new Item using item.model_dump() + the next id
-    #   2. append it to `items`
-    #   3. increment your id counter
-    #   4. return the created item
-    new_item = Item(**create_id(item).model_dump())
-    items.append(create_id(new_item))
+    global _next_id
+    new_item = Item(**item.model_dump())
+    new_item.id = _next_id
+    _next_id += 1
+    items[new_item.id] = new_item
     return new_item
 
 
-# ---------------------------------------------------------------------------
-# TODO 5: PUT /items/{item_id} — full update
-# ---------------------------------------------------------------------------
-@app.put("/items/{item_id}")
+@app.put("/items/{item_id}", status_code=status.HTTP_200_OK)
 def update_item(item_id: int, updated_item: ItemCreate):
-    # TODO: find the item, replace its fields (keep the same id), 404 if missing
-    for i in range(len(items)):
-        if items[i].id == item_id:
-            updated_item.id = item_id
-            items[i] = Item(**updated_item.model_dump())
-            return updated_item
-    raise HTTPException(status_code=404, detail="id not found")
-# ---------------------------------------------------------------------------
-# TODO 6: DELETE /items/{item_id}
-# ---------------------------------------------------------------------------
-@app.delete("/items/{item_id}", status_code=204)
+    _get_or_404(item_id)
+    new_item = Item(**updated_item.model_dump())
+    new_item.id = item_id
+    items[item_id] = new_item
+    return new_item
+
+
+@app.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_item(item_id: int):
-    # TODO: find and remove the item, 404 if missing
-    for i in range(len(items)):
-        if items[i].id == item_id:
-            items.pop(i)
-            return "succes"
-    raise HTTPException(status_code=404, detail="id not found")
+    _get_or_404(item_id)
+    items.pop(item_id)
 
 
 # ---------------------------------------------------------------------------
