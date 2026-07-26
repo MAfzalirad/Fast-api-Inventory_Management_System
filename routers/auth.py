@@ -75,8 +75,8 @@ def authenticate_user(db, username: str, password: str):
         return False
 
 
-def create_access_token (user_name: str, user_id: int, expires_delta: timedelta):
-    encode = {'username': user_name, 'id': user_id}
+def create_access_token (user_name: str, user_id: int,user_role: str, expires_delta: timedelta):
+    encode = {'username': user_name, 'id': user_id, 'role': user_role}
     expires = datetime.now(timezone.utc) + expires_delta
     encode.update({'exp': expires})
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -87,18 +87,18 @@ async def login_for_access_token(db: db_dependency, form_data: Annotated[OAuth2P
     user = authenticate_user(db, username=form_data.username, password = form_data.password)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    token = create_access_token(user.user_name, user.id, timedelta(minutes=20))
+    token = create_access_token(user.user_name, user.id,user.role, timedelta(minutes=20))
     return {'access_token': token, 'token_type': 'bearer'}
 
 
-#TODO: What is async doing?
 async def get_current_user(token: Annotated[str, Depends(auth2bearer)]):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         username: str = payload.get('username')
         user_id: int = payload.get('id')
+        user_role: str = payload.get('role')
         if username is None or user_id is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate user.')
-        return {'username': username, 'id': user_id}
+        return {'username': username, 'id': user_id, 'role': user_role}
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate user.')
