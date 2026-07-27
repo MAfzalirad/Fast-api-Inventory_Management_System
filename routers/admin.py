@@ -1,12 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
-import models
-from typing import Annotated, Optional
+from pydantic import Field
+from typing import Annotated
 from starlette import status
 from database import SessionLocal
 from models import Items
-from enum import Enum
 from .auth import get_current_user
 
 router = APIRouter(
