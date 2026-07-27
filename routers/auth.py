@@ -10,6 +10,7 @@ from models import Users
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
+from enum import Enum
 
 router = APIRouter(
     prefix ='/auth',
@@ -25,6 +26,10 @@ bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 auth2bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
 
+class RoleEnum(str, Enum):
+    Manager = 'manager'
+    ADMIN = 'admin'
+    VIEWER = 'viewer'
 
 class UserCreate(BaseModel):
     user_name: str
@@ -32,7 +37,7 @@ class UserCreate(BaseModel):
     first_name: str
     last_name: str
     password: str
-    role: str
+    role: RoleEnum
 
 
 class Token(BaseModel):
