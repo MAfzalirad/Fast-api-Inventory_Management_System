@@ -48,6 +48,14 @@ class UserCreate(BaseModel):
     role: RoleEnum
 
 
+class UserRegister(BaseModel):
+    username: str
+    email: str
+    first_name: str
+    last_name: str
+    password: str
+
+
 class ItemCreate(BaseModel):
     name: str = Field(min_length=2, max_length=50)
     category: CategoryEnum

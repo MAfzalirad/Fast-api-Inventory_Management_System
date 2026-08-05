@@ -1,12 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from typing import Annotated
 from starlette import status
-from database import SessionLocal
 from passlib.context import CryptContext
 from models import Users
-from .auth import get_current_user
 from schemas import UserResponse, UserVerification
+from dependencies import db_dependency, user_dependency
 
 
 router = APIRouter(
@@ -14,22 +11,12 @@ router = APIRouter(
     tags=['users']
 )
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-db_dependeny = Annotated[Session, Depends(get_db)]
-user_dependency = Annotated[dict, Depends(get_current_user)]
 
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
 @router.get('/', status_code=status.HTTP_200_OK)
-async def read_user_info(db: db_dependeny, user: user_dependency):
+async def read_user_info(db: db_dependency, user: user_dependency):
     requested_user = db.query(Users).filter(Users.id == user.get('id')).first()
     if requested_user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
@@ -37,7 +24,7 @@ async def read_user_info(db: db_dependeny, user: user_dependency):
     return response_model
 
 @router.put('/password', status_code=status.HTTP_204_NO_CONTENT)
-async def change_password(db: db_dependeny, user: user_dependency, user_verification: UserVerification):
+async def change_password(db: db_dependency, user: user_dependency, user_verification: UserVerification):
     user_model = db.query(Users).filter(Users.id == user.get('id')).first()
     if user_model is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')

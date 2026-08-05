@@ -1,14 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Path
-from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
-import models
-from typing import Annotated, Optional
+from typing import Optional
 from starlette import status
-from database import SessionLocal
 from models import Items
 from schemas import ItemCreate, CategoryEnum
-from .auth import get_current_user
 from schemas import ItemResponse
+from dependencies import db_dependency, user_dependency, require_role
+from typing_extensions import Annotated
+
 
 router = APIRouter(
     prefix='/item',
@@ -16,19 +14,8 @@ router = APIRouter(
 )
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-db_dependeny = Annotated[Session, Depends(get_db)]
-user_dependency = Annotated[dict, Depends(get_current_user)]
-
 @router.get("/", status_code=status.HTTP_200_OK)
-def get_items(db: db_dependeny,user: user_dependency,
+def get_items(db: db_dependency,user: user_dependency,
     category: Optional[CategoryEnum] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
@@ -51,7 +38,7 @@ def get_items(db: db_dependeny,user: user_dependency,
 
 
 @router.get("/{item_id}", status_code=status.HTTP_200_OK)
-def get_item(db: db_dependeny,user: user_dependency, item_id: int):
+def get_item(db: db_dependency,user: user_dependency, item_id: int):
     requested_item = db.query(Items).filter(Items.id == item_id).filter(Items.owner_id == user.get('id')).first()
     if requested_item is None:
        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='item not found')
@@ -59,7 +46,7 @@ def get_item(db: db_dependeny,user: user_dependency, item_id: int):
 
 
 @router.post("/",status_code=status.HTTP_201_CREATED, response_model=ItemResponse)
-def create_item(db: db_dependeny,user: user_dependency, item: ItemCreate):
+def create_item(db: db_dependency,user: user_dependency, item: ItemCreate, role_check: Annotated[dict, Depends(require_role('admin', 'manager'))]):
     item_model = Items(**item.model_dump(), owner_id = user.get('id'))
 
     db.add(item_model)
@@ -69,7 +56,7 @@ def create_item(db: db_dependeny,user: user_dependency, item: ItemCreate):
 
 
 @router.put("/{item_id}", status_code=status.HTTP_202_ACCEPTED, response_model=ItemResponse)
-def update_item(db: db_dependeny,user: user_dependency, item_id: int, updated_item: ItemCreate):
+def update_item(db: db_dependency,user: user_dependency, item_id: int, updated_item: ItemCreate, role_check: Annotated[dict, Depends(require_role('admin', 'manager'))]):
     requested_item = db.query(Items).filter(Items.id == item_id).filter(Items.owner_id == user.get('id')).first()
     if requested_item is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='item not found')
@@ -87,7 +74,7 @@ def update_item(db: db_dependeny,user: user_dependency, item_id: int, updated_it
 
 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_item(db: db_dependeny,user: user_dependency, item_id: int):
+def delete_item(db: db_dependency,user: user_dependency, item_id: int, role_check: Annotated[dict, Depends(require_role('admin', 'manager'))]):
     requested_item = db.query(Items).filter(Items.id == item_id).filter(Items.owner_id == user.get('id')).first()
     if requested_item is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='item not found')
