@@ -6,36 +6,13 @@ from typing import Annotated, Optional
 from starlette import status
 from database import SessionLocal
 from models import Items
-from enum import Enum
+from schemas import ItemCreate, CategoryEnum
 from .auth import get_current_user
 
 router = APIRouter(
     prefix='/item',
     tags=['item']
 )
-
-
-class CategoryEnum(str, Enum):
-    Electronics = 'Electronics'
-    Furniture = 'Furniture'
-    Clothing = 'Clothing'
-    Food_Beverage = 'Food_Beverage'
-    Tools = 'Tools'
-    Office_Supplies = 'Office_Supplies'
-    Health_Beauty = 'Health_Beauty'
-    Toys_Games =  'Toys_Games'
-    Books_Media = 'Books_Media'
-    Automotive = 'Automotive'
-    Sporting_Goods = 'Sporting_Goods'
-    Home_Kitchen = 'Home_Kitchen'
-
-
-class ItemCreate(BaseModel):
-    name: str = Field(min_length=2, max_length=50)
-    category: CategoryEnum
-    price: float = Field(gt=0)
-    quantity: int = Field(ge=0)
-    description:str | None = Field(description='Description is optional', max_length=200, default=None)
 
 
 def get_db():

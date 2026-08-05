@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
@@ -10,7 +9,7 @@ from models import Users
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
-from enum import Enum
+from schemas import UserCreate
 
 router = APIRouter(
     prefix ='/auth',
@@ -26,18 +25,6 @@ bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 auth2bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
 
-class RoleEnum(str, Enum):
-    Manager = 'manager'
-    ADMIN = 'admin'
-    VIEWER = 'viewer'
-
-class UserCreate(BaseModel):
-    username: str
-    email: str
-    first_name: str
-    last_name: str
-    password: str
-    role: RoleEnum
 
 
 class Token(BaseModel):
@@ -67,6 +54,7 @@ async def create_user(db: db_dependency, user_request: UserCreate):
 
     db.add(user_model)
     db.commit()
+    db.refresh(user_model)
     return user_model
 
 
