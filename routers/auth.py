@@ -9,7 +9,7 @@ from models import Users
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
-from schemas import UserCreate
+from schemas import UserCreate, UserResponse
 
 router = APIRouter(
     prefix ='/auth',
@@ -55,6 +55,7 @@ async def create_user(db: db_dependency, user_request: UserCreate):
     db.add(user_model)
     db.commit()
     db.refresh(user_model)
+    user_model = UserResponse.model_validate(user_model)
     return user_model
 
 

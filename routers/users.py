@@ -33,15 +33,7 @@ async def read_user_info(db: db_dependeny, user: user_dependency):
     requested_user = db.query(Users).filter(Users.id == user.get('id')).first()
     if requested_user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Item not found')
-    response_model = UserResponse(
-        id=requested_user.id,
-        username = requested_user.username,
-        email = requested_user.email,
-        first_name = requested_user.first_name,
-        last_name = requested_user.last_name,
-        role = requested_user.role,
-        is_active = requested_user.is_active
-)
+    response_model = UserResponse.model_validate(requested_user)
     return response_model
 
 @router.put('/password', status_code=status.HTTP_204_NO_CONTENT)
