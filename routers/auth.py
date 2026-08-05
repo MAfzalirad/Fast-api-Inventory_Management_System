@@ -7,7 +7,7 @@ from models import Users
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import jwt
 from dependencies import db_dependency, SECRET_KEY, ALGORITHM, bcrypt_context
-from schemas import UserResponse, UserRegister
+from schemas import UserResponse, UserCreate
 from sqlalchemy.exc import IntegrityError
 
 
@@ -23,7 +23,7 @@ class Token(BaseModel):
 
 
 @router.post('/', status_code=status.HTTP_201_CREATED, response_model=UserResponse)
-async def create_user(db: db_dependency, user_request: UserRegister):
+async def create_user(db: db_dependency, user_request: UserCreate):
     user_model = Users(
         username = user_request.username,
         email = user_request.email,
@@ -31,8 +31,10 @@ async def create_user(db: db_dependency, user_request: UserRegister):
         last_name = user_request.last_name,
         hash_password = bcrypt_context.hash(user_request.password),
         is_active = True,
+        role = user_request.role
     )
-    user_model.role = 'viewer'
+    if user_model.role == 'manager':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Cannot create a manager user.')
     try:
         db.add(user_model)
         db.commit()

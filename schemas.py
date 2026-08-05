@@ -4,7 +4,6 @@ from enum import Enum
 class RoleEnum(str, Enum):
     Manager = 'manager'
     ADMIN = 'admin'
-    VIEWER = 'viewer'
 
 class CategoryEnum(str, Enum):
     Electronics = 'Electronics'
@@ -46,14 +45,6 @@ class UserCreate(BaseModel):
     last_name: str
     password: str = Field(min_length=6)
     role: RoleEnum
-
-
-class UserRegister(BaseModel):
-    username: str
-    email: str
-    first_name: str
-    last_name: str
-    password: str = Field(min_length=6)
 
 
 class ItemCreate(BaseModel):
