@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 from models import Users
 from schemas import UserResponse, UserVerification
-from dependencies import db_dependency, user_dependency
+from dependencies import db_dependency, user_dependency, bcrypt_context
 
 
 router = APIRouter(
