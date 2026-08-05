@@ -34,15 +34,15 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 async def get_current_user(token: Annotated[str, Depends(auth2bearer)], db: db_dependency):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get('username')
         user_id: int = payload.get('id')
         user_role: str = payload.get('role')
         if username is None or user_id is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate user.')
         user_model = db.query(Users).filter(Users.id == user_id).first()
-        if not user_model.is_active:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Inactive user.')
+        if user_model is None or not user_model.is_active:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate user.')
         return {'username': username, 'id': user_id, 'role': user_role}
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate user.')

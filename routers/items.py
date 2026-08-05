@@ -22,7 +22,7 @@ def get_items(db: db_dependency,user: user_dependency,
     in_stock_only: Optional[bool] = False,
     search: Optional[str] = None,
 ):
-    working_list = db.query(Items).filter(Items.owner_id == user.get('id'))
+    working_list = db.query(Items)
     if category is not None:
         working_list = working_list.filter(Items.category == category)
     if min_price is not None:
