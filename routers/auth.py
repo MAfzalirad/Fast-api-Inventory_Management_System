@@ -4,20 +4,17 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 from models import Users
-from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import jwt
-from dependencies import db_dependency, SECRET_KEY, ALGORITHM
+from dependencies import db_dependency, SECRET_KEY, ALGORITHM, bcrypt_context
 from schemas import UserResponse, UserRegister
+from sqlalchemy.exc import IntegrityError
 
 
 router = APIRouter(
     prefix ='/auth',
     tags = ['auth']
 )
-
-
-bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
 class Token(BaseModel):
@@ -36,9 +33,12 @@ async def create_user(db: db_dependency, user_request: UserRegister):
         is_active = True,
     )
     user_model.role = 'viewer'
-    db.add(user_model)
-    db.commit()
-    db.refresh(user_model)
+    try:
+        db.add(user_model)
+        db.commit()
+        db.refresh(user_model)
+    except IntegrityError:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Username or email already exists')
     return user_model
 
 

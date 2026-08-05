@@ -44,7 +44,7 @@ class UserCreate(BaseModel):
     email: str
     first_name: str
     last_name: str
-    password: str
+    password: str = Field(min_length=6)
     role: RoleEnum
 
 
@@ -53,7 +53,7 @@ class UserRegister(BaseModel):
     email: str
     first_name: str
     last_name: str
-    password: str
+    password: str = Field(min_length=6)
 
 
 class ItemCreate(BaseModel):

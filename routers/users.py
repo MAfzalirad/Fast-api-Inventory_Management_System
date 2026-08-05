@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
-from passlib.context import CryptContext
 from models import Users
 from schemas import UserResponse, UserVerification
 from dependencies import db_dependency, user_dependency
@@ -10,9 +9,6 @@ router = APIRouter(
     prefix='/users',
     tags=['users']
 )
-
-
-bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
 @router.get('/', status_code=status.HTTP_200_OK)
