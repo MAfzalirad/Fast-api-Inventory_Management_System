@@ -39,7 +39,7 @@ def get_items(db: db_dependency,user: user_dependency,
 
 @router.get("/{item_id}", status_code=status.HTTP_200_OK)
 def get_item(db: db_dependency,user: user_dependency, item_id: int):
-    requested_item = db.query(Items).filter(Items.id == item_id).filter(Items.owner_id == user.get('id')).first()
+    requested_item = db.query(Items).filter(Items.id == item_id).first()
     if requested_item is None:
        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='item not found')
     return requested_item
@@ -57,7 +57,7 @@ def create_item(db: db_dependency,user: user_dependency, item: ItemCreate, role_
 
 @router.put("/{item_id}", status_code=status.HTTP_202_ACCEPTED, response_model=ItemResponse)
 def update_item(db: db_dependency,user: user_dependency, item_id: int, updated_item: ItemCreate, role_check: Annotated[dict, Depends(require_role('admin', 'manager'))]):
-    requested_item = db.query(Items).filter(Items.id == item_id).filter(Items.owner_id == user.get('id')).first()
+    requested_item = db.query(Items).filter(Items.id == item_id).first()
     if requested_item is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='item not found')
     
@@ -75,7 +75,7 @@ def update_item(db: db_dependency,user: user_dependency, item_id: int, updated_i
 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_item(db: db_dependency,user: user_dependency, item_id: int, role_check: Annotated[dict, Depends(require_role('admin', 'manager'))]):
-    requested_item = db.query(Items).filter(Items.id == item_id).filter(Items.owner_id == user.get('id')).first()
+    requested_item = db.query(Items).filter(Items.id == item_id).first()
     if requested_item is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='item not found')
     db.query(Items).filter(Items.id == item_id).delete()

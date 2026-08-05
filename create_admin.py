@@ -7,7 +7,7 @@ from database import SessionLocal
 load_dotenv()
 
 
-def create_admin():
+def create_admin(db):
     user_model = db.query(Users).filter(Users.role == 'admin').first()
     if user_model is None:
         admin_user = Users(
@@ -25,6 +25,6 @@ def create_admin():
 if __name__ == '__main__':
     db = SessionLocal()
     try:
-        create_admin()
+        create_admin(db)
     finally:
         db.close()
