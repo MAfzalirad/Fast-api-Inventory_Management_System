@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
 
 class RoleEnum(str, Enum):
@@ -34,9 +34,9 @@ class UserResponse(BaseModel):
     role: str
     is_active: bool
 
-    model_config={
-        "from_attributes": True
-    }
+    model_config=ConfigDict(
+        from_attributes=True
+    )
 
 
 class UserCreate(BaseModel):
@@ -54,3 +54,16 @@ class ItemCreate(BaseModel):
     price: float = Field(gt=0)
     quantity: int = Field(ge=0)
     description:str | None = Field(description='Description is optional', max_length=200, default=None)
+
+
+class ItemResponse(BaseModel):
+    id: int
+    name: str
+    category: CategoryEnum
+    price: float
+    quantity: int
+    description: str | None
+
+    model_config=ConfigDict(
+        from_attributes=True
+    )

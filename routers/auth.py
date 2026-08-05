@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,20 +13,20 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 from schemas import UserCreate, UserResponse
 
+load_dotenv()
+
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALGORITHM = os.getenv('ALGORITHM')
+
 router = APIRouter(
     prefix ='/auth',
     tags = ['auth']
 )
 
 
-SECRET_KEY = '36275d3e4e10a0f5ca9933d470e2b8ff0ffd027d7cfcbdf9b5726ff1f0b89d65'
-ALGORITHM = 'HS256'
-
-
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 auth2bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
-
 
 
 class Token(BaseModel):

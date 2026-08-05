@@ -8,6 +8,7 @@ from database import SessionLocal
 from models import Items
 from schemas import ItemCreate, CategoryEnum
 from .auth import get_current_user
+from schemas import ItemResponse
 
 router = APIRouter(
     prefix='/item',
@@ -57,15 +58,17 @@ def get_item(db: db_dependeny,user: user_dependency, item_id: int):
     return requested_item
 
 
-@router.post("/",status_code=status.HTTP_201_CREATED)
+@router.post("/",status_code=status.HTTP_201_CREATED, response_model=ItemResponse)
 def create_item(db: db_dependeny,user: user_dependency, item: ItemCreate):
     item_model = Items(**item.model_dump(), owner_id = user.get('id'))
 
     db.add(item_model)
     db.commit()
+    db.refresh(item_model)
+    return item_model
 
 
-@router.put("/{item_id}", status_code=status.HTTP_202_ACCEPTED)
+@router.put("/{item_id}", status_code=status.HTTP_202_ACCEPTED, response_model=ItemResponse)
 def update_item(db: db_dependeny,user: user_dependency, item_id: int, updated_item: ItemCreate):
     requested_item = db.query(Items).filter(Items.id == item_id).filter(Items.owner_id == user.get('id')).first()
     if requested_item is None:
@@ -79,6 +82,8 @@ def update_item(db: db_dependeny,user: user_dependency, item_id: int, updated_it
 
     db.add(requested_item)
     db.commit()
+    db.refresh(requested_item)
+    return requested_item
 
 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
