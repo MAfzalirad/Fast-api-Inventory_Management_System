@@ -4,9 +4,9 @@ from starlette import status
 from models import Items, Users
 from dependencies import db_dependency, require_role, user_dependency, bcrypt_context
 from typing_extensions import Annotated
-from schemas import UserCreate, UserResponse
+from schemas import UserCreate, UserResponse, RoleEnum
 from sqlalchemy.exc import IntegrityError
-
+from typing import List
 
 router = APIRouter(
     prefix='/admin',
@@ -14,13 +14,13 @@ router = APIRouter(
 )
 
 
-@router.get('/users', status_code=status.HTTP_200_OK)
+@router.get('/users', status_code=status.HTTP_200_OK, response_model=List[UserResponse])
 async def get_all_users(db: db_dependency, user: user_dependency, role_check: Annotated[dict, Depends(require_role('admin'))]):
     users = db.query(Users).all()
     return users
 
 
-@router.get('/users/{user_id}', status_code=status.HTTP_200_OK)
+@router.get('/users/{user_id}', status_code=status.HTTP_200_OK, response_model=UserResponse)
 async def get_user_by_id(db: db_dependency, user: user_dependency, user_id: Annotated[int, Path(gt=0)], role_check: Annotated[dict, Depends(require_role('admin'))]):
     requested_user = db.query(Users).filter(Users.id == user_id).first()
     if requested_user is None:
@@ -29,11 +29,11 @@ async def get_user_by_id(db: db_dependency, user: user_dependency, user_id: Anno
 
 
 @router.put('/users/{user_id}/role', status_code=status.HTTP_204_NO_CONTENT)
-async def change_user_role(db: db_dependency, user: user_dependency, user_id: Annotated[int, Path(gt=0)], new_role: Annotated[str, Query(min_length=3)], role_check: Annotated[dict, Depends(require_role('admin'))]):
+async def change_user_role(db: db_dependency, user: user_dependency, user_id: Annotated[int, Path(gt=0)], new_role: RoleEnum, role_check: Annotated[dict, Depends(require_role('admin'))]):
     requested_user = db.query(Users).filter(Users.id == user_id).first()
     if requested_user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
-    requested_user.role = new_role
+    requested_user.role = new_role.value
     db.add(requested_user)
     db.commit()
 
@@ -57,7 +57,7 @@ async def delete_user(db: db_dependency, user: user_dependency, user_id: Annotat
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
     if requested_user.id == user.get('id'):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Cannot delete your own account')
-    db.query(Users).filter(Users.id == user_id).delete()
+    db.delete(requested_user)
     db.commit()
 
 

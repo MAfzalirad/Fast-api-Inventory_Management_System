@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Path
-from typing import Optional
+from typing import List, Optional
 from starlette import status
 from models import Items
 from schemas import ItemCreate, CategoryEnum
@@ -14,7 +14,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", status_code=status.HTTP_200_OK)
+@router.get("/", status_code=status.HTTP_200_OK, response_model=List[ItemResponse])
 def get_items(db: db_dependency,user: user_dependency,
     category: Optional[CategoryEnum] = None,
     min_price: Optional[float] = None,
@@ -37,7 +37,7 @@ def get_items(db: db_dependency,user: user_dependency,
     return working_list
 
 
-@router.get("/{item_id}", status_code=status.HTTP_200_OK)
+@router.get("/{item_id}", status_code=status.HTTP_200_OK, response_model=ItemResponse)
 def get_item(db: db_dependency,user: user_dependency, item_id: int):
     requested_item = db.query(Items).filter(Items.id == item_id).first()
     if requested_item is None:
@@ -78,5 +78,5 @@ def delete_item(db: db_dependency,user: user_dependency, item_id: int, role_chec
     requested_item = db.query(Items).filter(Items.id == item_id).first()
     if requested_item is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='item not found')
-    db.query(Items).filter(Items.id == item_id).delete()
+    db.delete(requested_item)
     db.commit()

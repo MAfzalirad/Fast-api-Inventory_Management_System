@@ -11,14 +11,23 @@ from fastapi.security import OAuth2PasswordBearer
 from models import Users
 
 load_dotenv()
-SECRET_KEY = os.getenv('SECRET_KEY')
-ALGORITHM = os.getenv('ALGORITHM')
+
+
+def get_required_env(name):
+    require_env = os.getenv(name)
+    if require_env is None:
+        raise ValueError(f"Environment variable '{name}' is required but not set.")
+    return require_env
+
+
+SECRET_KEY = get_required_env('SECRET_KEY')
+ALGORITHM = get_required_env('ALGORITHM')
+
 
 auth2bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
 
 
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
-
 
 
 def get_db():

@@ -1,8 +1,9 @@
 import os
 from dotenv import load_dotenv
 from models import Users
-from dependencies import bcrypt_context
+from dependencies import bcrypt_context, get_required_env
 from database import SessionLocal
+
 
 load_dotenv()
 
@@ -11,11 +12,11 @@ def create_admin(db):
     user_model = db.query(Users).filter(Users.role == 'admin').first()
     if user_model is None:
         admin_user = Users(
-            username=os.getenv('ADMIN_USERNAME'),
-            email=os.getenv('ADMIN_EMAIL'),
+            username=get_required_env('ADMIN_USERNAME'),
+            email=get_required_env('ADMIN_EMAIL'),
             first_name='Admin',
             last_name='User',
-            hash_password=bcrypt_context.hash(os.getenv('ADMIN_PASSWORD')),
+            hash_password=bcrypt_context.hash(get_required_env('ADMIN_PASSWORD')),
             is_active=True,
             role='admin'
         )
