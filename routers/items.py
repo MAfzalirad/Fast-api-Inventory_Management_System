@@ -34,17 +34,18 @@ def get_items(db: db_dependeny,user: user_dependency,
     in_stock_only: Optional[bool] = False,
     search: Optional[str] = None,
 ):
-    working_list = db.query(Items).filter(Items.owner_id == user.get('id')).all()
+    working_list = db.query(Items).filter(Items.owner_id == user.get('id'))
     if category is not None:
-        working_list = list(filter(lambda item: item.category.casefold() == category.casefold(), working_list))
+        working_list = working_list.filter(Items.category == category)
     if min_price is not None:
-        working_list = list(filter(lambda item: item.price >= min_price, working_list))
+        working_list = working_list.filter(Items.price >= min_price)
     if max_price is not None:
-        working_list = list(filter(lambda item: item.price <= max_price, working_list))
+        working_list = working_list.filter(Items.price <= max_price)
     if in_stock_only:
-        working_list = list(filter(lambda item: item.quantity > 0, working_list))
+        working_list = working_list.filter(Items.quantity > 0)
     if search is not None:
-        working_list = list(filter(lambda item: search.casefold() in item.name.casefold(), working_list))
+        working_list = working_list.filter(Items.name.ilike(f"%{search}%"))
+    working_list = working_list.all()
     return working_list
 
 
