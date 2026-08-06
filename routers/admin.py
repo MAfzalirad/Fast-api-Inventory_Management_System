@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Path
+from fastapi import APIRouter, Depends, HTTPException, Query, Path, Body
 from pydantic import Field
 from starlette import status
 from models import Items, Users
@@ -29,7 +29,7 @@ async def get_user_by_id(db: db_dependency, user: user_dependency, user_id: Anno
 
 
 @router.put('/users/{user_id}/role', status_code=status.HTTP_204_NO_CONTENT)
-async def change_user_role(db: db_dependency, user: user_dependency, user_id: Annotated[int, Path(gt=0)], new_role: RoleEnum, role_check: Annotated[dict, Depends(require_role('admin'))]):
+async def change_user_role(db: db_dependency, user: user_dependency, user_id: Annotated[int, Path(gt=0)], new_role: Annotated[RoleEnum, Body(embed=True)], role_check: Annotated[dict, Depends(require_role('admin'))]):
     requested_user = db.query(Users).filter(Users.id == user_id).first()
     if requested_user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')

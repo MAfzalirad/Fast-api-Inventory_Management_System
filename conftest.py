@@ -84,3 +84,24 @@ def test_user():
     with engine.connect() as connection:
         connection.execute(text("DELETE FROM users;"))
         connection.commit()
+
+
+@pytest.fixture
+def test_viewer_user():
+    user = Users(
+        username = 'viewer1',
+        email = 'viewer1@gmail.com',
+        first_name = 'viewer',
+        last_name = 'viewer',
+        hash_password = bcrypt_context.hash('viewer123'),
+        is_active = True,
+        role = 'viewer',
+    )
+
+    db = TestingSessionLocal()
+    db.add(user)
+    db.commit()
+    yield user
+    with engine.connect() as connection:
+        connection.execute(text("DELETE FROM users;"))
+        connection.commit()

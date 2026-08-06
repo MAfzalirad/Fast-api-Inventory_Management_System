@@ -1,10 +1,6 @@
 from conftest import *
-from dependencies import get_db, get_current_user
 from fastapi import status
 
-
-app.dependency_overrides[get_db] = override_get_db
-app.dependency_overrides[get_current_user] = override_get_current_user
 
 def test_read_all_items_authenticated(test_item):
     response = client.get('/item/')
