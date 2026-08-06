@@ -31,7 +31,7 @@ class UserResponse(BaseModel):
     email: str
     first_name: str
     last_name: str
-    role: str
+    role: RoleEnum
     is_active: bool
 
     model_config=ConfigDict(
