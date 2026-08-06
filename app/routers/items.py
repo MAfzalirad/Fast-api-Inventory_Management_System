@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from typing import List, Optional
 from starlette import status
-from models import Items
-from schemas import ItemCreate, CategoryEnum
-from schemas import ItemResponse
-from dependencies import db_dependency, user_dependency, require_role
+from app.models import Items
+from app.schemas import ItemCreate, CategoryEnum
+from app.schemas import ItemResponse
+from app.dependencies import db_dependency, user_dependency, require_role
 from typing_extensions import Annotated
 
 

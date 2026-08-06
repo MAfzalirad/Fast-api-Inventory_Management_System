@@ -1,8 +1,9 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
-import models
-from database import engine
-from routers import items, auth, users, admin
+from app.routers import admin, auth, items
+import app.models as models
+from app.database import engine
+from app.routers import users
 
 app = FastAPI(title="Inventory Management API")
 

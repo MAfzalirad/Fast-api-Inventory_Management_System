@@ -3,11 +3,11 @@ from pydantic import BaseModel
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
-from models import Users
+from app.models import Users
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import jwt
-from dependencies import db_dependency, SECRET_KEY, ALGORITHM, bcrypt_context
-from schemas import UserResponse, UserRegister
+from app.dependencies import db_dependency, SECRET_KEY, ALGORITHM, bcrypt_context
+from app.schemas import UserResponse, UserRegister
 from sqlalchemy.exc import IntegrityError
 
 

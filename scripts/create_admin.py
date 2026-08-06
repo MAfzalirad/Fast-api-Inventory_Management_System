@@ -1,8 +1,9 @@
 import os
 from dotenv import load_dotenv
-from models import Users
-from dependencies import bcrypt_context, get_required_env
-from database import SessionLocal
+from app.models import Users
+from app.env_utils import get_required_env
+from app.dependencies import bcrypt_context
+from app.database import SessionLocal
 
 
 load_dotenv()

@@ -1,24 +1,13 @@
-import os
-from dotenv import load_dotenv
 from fastapi import Depends, HTTPException
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from starlette import status
 from typing_extensions import Annotated
-from database import SessionLocal
+from app.database import SessionLocal
 from fastapi.security import OAuth2PasswordBearer
-from models import Users
-
-load_dotenv()
-
-
-def get_required_env(name):
-    require_env = os.getenv(name)
-    if require_env is None:
-        raise ValueError(f"Environment variable '{name}' is required but not set.")
-    return require_env
-
+from app.models import Users
+from app.env_utils import get_required_env
 
 SECRET_KEY = get_required_env('SECRET_KEY')
 ALGORITHM = get_required_env('ALGORITHM')

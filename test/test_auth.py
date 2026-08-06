@@ -1,5 +1,5 @@
-from conftest import *
-from routers.auth import authenticate_user, create_access_token
+from test.conftest import *
+from app.routers.auth import authenticate_user, create_access_token
 from datetime import timedelta
 from jose import jwt
 

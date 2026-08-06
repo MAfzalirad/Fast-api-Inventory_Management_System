@@ -1,17 +1,19 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent.parent / '.env.test', override=True)
+
 from sqlalchemy import create_engine, text
-from database import Base
-from sqlalchemy.pool import StaticPool
+from app.database import Base
 from sqlalchemy.orm import sessionmaker
-from main import app
-from models import Items, Users
+from app.main import app
+from app.models import Items, Users
 from fastapi.testclient import TestClient
 import pytest
 from passlib.context import CryptContext
-from dependencies import get_current_user, get_db, get_required_env
-
-load_dotenv('Inventory_Management_System/.env.test')
+from app.dependencies import get_current_user, get_db
+from app.env_utils import get_required_env
 
 SECRET_KEY = get_required_env('SECRET_KEY')
 ALGORITHM = get_required_env('ALGORITHM')
@@ -19,7 +21,7 @@ ALGORITHM = get_required_env('ALGORITHM')
 
 SQLALCHEMY_DATABASE_URL = 'sqlite:///./testims.db'
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL,connect_args={"check_same_thread": False}, poolclass=StaticPool)
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={'check_same_thread': False})
 
 
 TestingSessionLocal = sessionmaker(autocommit=False,autoflush=False, bind=engine)

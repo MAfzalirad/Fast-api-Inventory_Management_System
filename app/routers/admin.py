@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Path, Body
 from pydantic import Field
 from starlette import status
-from models import Items, Users
-from dependencies import db_dependency, require_role, user_dependency, bcrypt_context
+from app.models import Items, Users
+from app.dependencies import db_dependency, require_role, user_dependency, bcrypt_context
 from typing_extensions import Annotated
-from schemas import UserCreate, UserResponse, RoleEnum
+from app.schemas import UserCreate, UserResponse, RoleEnum
 from sqlalchemy.exc import IntegrityError
 from typing import List
 
