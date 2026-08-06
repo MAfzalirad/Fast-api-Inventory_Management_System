@@ -1,4 +1,4 @@
-from ..test.conftest import *
+from test.conftest import *
 from fastapi import status
 
 
