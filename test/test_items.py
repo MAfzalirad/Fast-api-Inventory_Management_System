@@ -29,7 +29,7 @@ def test_get_item_authenticated(test_item):
 
 
 def test_read_one_not_found():
-    response = client.get('/items/999')
+    response = client.get('/item/999')
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
@@ -72,7 +72,7 @@ def test_update_item_authenticated(test_item):
 
 
 def test_delete_todo(test_item):
-    response = client.delete('item/1')
+    response = client.delete('/item/1')
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
     db = TestingSessionLocal()
@@ -81,5 +81,5 @@ def test_delete_todo(test_item):
 
 
 def test_delete_todo_not_found():
-    response = client.delete('/todos/999')
+    response = client.delete('/item/999')
     assert response.status_code == status.HTTP_404_NOT_FOUND

@@ -45,6 +45,10 @@ def test_deactivate_user_authenticated(test_user, test_viewer_user):
     model = db.query(Users).filter(Users.id == test_viewer_user.id).first()
     assert not model.is_active
 
+def test_own_user_deactivate_authenticated(test_user):
+    response = client.put('/admin/users/1/deactivate')
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
 
 def test_delete_user_authenticated(test_user, test_viewer_user):
     response = client.delete('/admin/users/2')
@@ -52,6 +56,11 @@ def test_delete_user_authenticated(test_user, test_viewer_user):
     db = TestingSessionLocal()
     model = db.query(Users).filter(Users.id == 2).first()
     assert model is None
+
+
+def test_own_user_delete_authenticated(test_user):
+    response = client.delete('/admin/users/1')
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 def test_create_user_authenticated():
@@ -85,4 +94,3 @@ def test_create_user_authenticated():
     assert model.role == 'admin'
     assert model.is_active == True
     assert bcrypt_context.verify('admin123', model.hash_password)
-    
