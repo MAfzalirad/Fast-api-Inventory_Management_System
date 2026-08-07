@@ -74,6 +74,22 @@ def test_item():
 
 
 @pytest.fixture
+def test_items_multiple():
+    items = [
+        Items(name='Hammer', category='Tools', price=15.0, quantity=10),
+        Items(name='Chair', category='Furniture', price=50.0, quantity=0),
+        Items(name='Laptop', category='Electronics', price=999.99, quantity=5),
+    ]
+    db = TestingSessionLocal()
+    db.add_all(items)
+    db.commit()
+    yield items
+    with engine.connect() as connection:
+        connection.execute(text("DELETE FROM items;"))
+        connection.commit()
+
+
+@pytest.fixture
 def test_user():
     user = Users(
         username = 'Abzil',

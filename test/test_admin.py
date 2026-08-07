@@ -36,6 +36,11 @@ def test_get_user_by_id_authenticated(test_user):
     }
 
 
+def test_get_user_by_id_not_found(test_user):
+    response = client.get('/admin/users/999')
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
 def test_manager_cannot_get_user(as_role, test_user):
     as_role('manager')
     response = client.get('/admin/users/1')
@@ -50,6 +55,11 @@ def test_change_user_role_authenticated(test_user):
     assert model.role == 'manager'
 
 
+def test_change_user_role_not_found(test_user):
+    response = client.put('/admin/users/999/role', json={'new_role': 'manager'})
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
 def test_manager_cannot_changer_user_role(as_role, test_user):
     as_role('manager')
     response = client.put('/admin/users/1/role', json={'new_role': 'viewer'})
@@ -62,6 +72,12 @@ def test_deactivate_user_authenticated(test_user, test_viewer_user):
     db = TestingSessionLocal()
     model = db.query(Users).filter(Users.id == test_viewer_user.id).first()
     assert not model.is_active
+
+
+def test_deactivate_user_not_found(test_user):
+    response = client.put('/admin/users/999/deactivate')
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
 
 def test_own_user_deactivate_authenticated(test_user):
     response = client.put('/admin/users/1/deactivate')
@@ -84,6 +100,11 @@ def test_delete_user_authenticated(test_user, test_viewer_user):
 def test_own_user_delete_authenticated(test_user):
     response = client.delete('/admin/users/1')
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+def test_delete_user_not_found(test_user):
+    response = client.delete('/admin/users/999')
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_manager_cannot_delete_user(as_role, test_user, test_viewer_user):

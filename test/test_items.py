@@ -33,6 +33,47 @@ def test_read_one_not_found():
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
+def test_filter_items_by_category(test_items_multiple):
+    response = client.get('/item/?category=Tools')
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]['name'] == 'Hammer'
+
+
+def test_filter_items_by_price_range(test_items_multiple):
+    response = client.get('/item/?min_price=20&max_price=100')
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]['name'] == 'Chair'
+
+
+def test_filter_items_in_stock_only(test_items_multiple):
+    response = client.get('/item/?in_stock_only=true')
+    assert response.status_code == status.HTTP_200_OK
+    names = [item['name'] for item in response.json()]
+    assert 'Chair' not in names
+    assert 'Hammer' in names
+    assert 'Laptop' in names
+
+
+def test_filter_items_by_search(test_items_multiple):
+    response = client.get('/item/?search=lap')
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]['name'] == 'Laptop'
+
+
+def test_filter_items_combined(test_items_multiple):
+    response = client.get('/item/?category=Electronics&min_price=500')
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]['name'] == 'Laptop'
+
+
 def test_create_item_authentiacted():
     item_model = {
         'name' : 'Cup',
