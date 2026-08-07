@@ -38,9 +38,8 @@ def override_get_db():
     finally:
         db.close()
 
-
-def override_get_current_user():
-    return {'username':'Abzil', 'id':1, 'role':'admin'}
+def override_get_current_user(role: str = 'admin'):
+    return {'username':'Abzil', 'id':1, 'role': role}
 
 
 client = TestClient(app)
@@ -48,6 +47,13 @@ client = TestClient(app)
 app.dependency_overrides[get_db] = override_get_db
 app.dependency_overrides[get_current_user] = override_get_current_user
 
+
+@pytest.fixture
+def as_role():
+    def _set_role(role):
+        app.dependency_overrides[get_current_user] = lambda: override_get_current_user(role)
+    yield _set_role
+    app.dependency_overrides[get_current_user] = override_get_current_user
 
 @pytest.fixture
 def test_item():

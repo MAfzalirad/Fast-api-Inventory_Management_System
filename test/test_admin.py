@@ -16,6 +16,12 @@ def test_get_all_users_authenticated(test_user):
     }]
 
 
+def test_manager_cannot_view_all_users(as_role, test_user):
+    as_role('manager')
+    response = client.get('/admin/users')
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
 def test_get_user_by_id_authenticated(test_user):
     response = client.get('/admin/users/1')
     assert response.status_code == status.HTTP_200_OK
@@ -30,12 +36,24 @@ def test_get_user_by_id_authenticated(test_user):
     }
 
 
+def test_manager_cannot_get_user(as_role, test_user):
+    as_role('manager')
+    response = client.get('/admin/users/1')
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
 def test_change_user_role_authenticated(test_user):
     response = client.put('/admin/users/1/role', json={'new_role': 'manager'})
     assert response.status_code == status.HTTP_204_NO_CONTENT
     db = TestingSessionLocal()
     model = db.query(Users).filter(Users.id == test_user.id).first()
     assert model.role == 'manager'
+
+
+def test_manager_cannot_changer_user_role(as_role, test_user):
+    as_role('manager')
+    response = client.put('/admin/users/1/role', json={'new_role': 'viewer'})
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_deactivate_user_authenticated(test_user, test_viewer_user):
@@ -49,6 +67,11 @@ def test_own_user_deactivate_authenticated(test_user):
     response = client.put('/admin/users/1/deactivate')
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
+def test_manager_cannot_deactivate_user(as_role, test_user, test_viewer_user):
+    as_role('manager')
+    response = client.put('/admin/users/2/deactivate')
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
 
 def test_delete_user_authenticated(test_user, test_viewer_user):
     response = client.delete('/admin/users/2')
@@ -61,6 +84,13 @@ def test_delete_user_authenticated(test_user, test_viewer_user):
 def test_own_user_delete_authenticated(test_user):
     response = client.delete('/admin/users/1')
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+def test_manager_cannot_delete_user(as_role, test_user, test_viewer_user):
+    as_role('manager')
+    response = client.delete('/admin/users/2')
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
 
 
 def test_create_user_authenticated():
@@ -94,3 +124,17 @@ def test_create_user_authenticated():
     assert model.role == 'admin'
     assert model.is_active == True
     assert bcrypt_context.verify('admin123', model.hash_password)
+
+
+def test_manager_cannot_create_user(as_role):
+    as_role('manager')
+    user_model = {
+        'username': 'admin2',
+        'email': 'admin2@gmail.com',
+        'first_name': 'admin',
+        'last_name': 'second',
+        'password': 'admin123',
+        'role': 'admin',
+    }
+    response = client.post('/admin/create-user', json=user_model)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
