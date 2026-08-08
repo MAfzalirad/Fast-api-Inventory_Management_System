@@ -21,6 +21,8 @@ def get_items(db: db_dependency,user: user_dependency,
     max_price: Optional[float] = None,
     in_stock_only: Optional[bool] = False,
     search: Optional[str] = None,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
 ):
     working_list = db.query(Items)
     if category is not None:
@@ -33,7 +35,7 @@ def get_items(db: db_dependency,user: user_dependency,
         working_list = working_list.filter(Items.quantity > 0)
     if search is not None:
         working_list = working_list.filter(Items.name.ilike(f"%{search}%"))
-    working_list = working_list.all()
+    working_list = working_list.offset(skip).limit(limit).all()
     return working_list
 
 
