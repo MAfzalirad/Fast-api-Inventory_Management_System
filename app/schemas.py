@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from enum import Enum
 
 class RoleEnum(str, Enum):
@@ -28,7 +28,7 @@ class UserVerification(BaseModel):
 class UserResponse(BaseModel):
     id: int
     username: str
-    email: str
+    email: EmailStr
     first_name: str
     last_name: str
     role: RoleEnum
@@ -41,7 +41,7 @@ class UserResponse(BaseModel):
 
 class UserCreate(BaseModel):
     username: str
-    email: str
+    email: EmailStr
     first_name: str
     last_name: str
     password: str = Field(min_length=6)
@@ -50,7 +50,7 @@ class UserCreate(BaseModel):
 
 class UserRegister(BaseModel):
     username: str
-    email: str
+    email: EmailStr
     first_name: str
     last_name: str
     password: str = Field(min_length=6)
